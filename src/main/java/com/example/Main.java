@@ -16,6 +16,7 @@
 
 package com.example;
 
+import com.example.response.Result;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -75,18 +77,22 @@ public class Main {
   }
 
   //Save a account to the postgres DB
-  @RequestMapping(value = "/save-account")
+  @RequestMapping(value = "/account")
   public @ResponseBody
-  boolean saveSfContact(@RequestParam(name = "name") String name, @RequestParam(name = "id")String id) {
+  Result saveSfContact(@RequestParam(name = "name") String name, @RequestParam(name = "id")String id) {
+    Result result = new Result();
     try (Connection connection = dataSource.getConnection()) {
       Statement stmt = connection.createStatement();
-      stmt.executeUpdate("update salesforcecgoconnect.account set salesforcecgoconnect.account.name= '"+ name +"' where recordtypeid = '" + id + "'");
-      return true;
+      ResultSet rs = stmt.executeQuery("select * from salesforcecgoconnect.account where salesforcecgoconnect.account.name= '"+ name +"' and salesforcecgoconnect.account.recordtypeid = '" + id + "'");
+      //stmt.executeUpdate("select * from salesforcecgoconnect.account where salesforcecgoconnect.account.name= '"+ name +"' and recordtypeid = '" + id + "'");
+      while (rs.next()){
+        result.setId(rs.getString("recordtypeid"));
+        result.setName(rs.getString("name"));
+      }
     } catch (Exception e) {
       e.printStackTrace();
-      return false;
     }
-
+    return result;
   }
 
   @Bean
