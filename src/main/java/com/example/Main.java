@@ -24,16 +24,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -42,6 +47,9 @@ public class Main {
 
   @Value("${spring.datasource.url}")
   private String dbUrl;
+
+  @Value("${test-app.url}")
+  private String testUrl;
 
   @Autowired
   private DataSource dataSource;
@@ -76,7 +84,6 @@ public class Main {
     }
   }
 
-  //Save a account to the postgres DB
   @RequestMapping(value = "/account")
   public @ResponseBody
   Result saveSfContact(@RequestParam(name = "name") String name, @RequestParam(name = "id")String id) {
@@ -93,6 +100,15 @@ public class Main {
       e.printStackTrace();
     }
     return result;
+  }
+
+  @RequestMapping(value = "/get-account")
+  public @ResponseBody
+  Result getSfContact(@RequestParam(name = "name") String name, @RequestParam(name = "id")String id) {
+    RestTemplate restTemplate = new RestTemplate();
+    String formattedQuoteUrl = MessageFormat.format(testUrl, name, id);
+    ResponseEntity<Result> result = restTemplate.getForEntity(formattedQuoteUrl, Result.class);
+    return result.getBody();
   }
 
   @Bean
