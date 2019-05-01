@@ -93,7 +93,7 @@ public class Main {
     List<HerokuResponse> herokuResult = new ArrayList<>();
     try (Connection connection = dataSource.getConnection()) {
       Statement stmt = connection.createStatement();
-      ResultSet rs = stmt.executeQuery("select * from salesforcecgoconnect.account where and salesforcecgoconnect.account.recordtypeid = '" + id + "'");
+      ResultSet rs = stmt.executeQuery("select * from salesforcecgoconnect.account where salesforcecgoconnect.account.recordtypeid = '" + id + "'");
 
       while (rs.next()){
         HerokuResponse herokuResponse = new HerokuResponse();
