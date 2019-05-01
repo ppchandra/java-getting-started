@@ -16,6 +16,7 @@
 
 package com.example;
 
+import com.example.response.HerokuResponse;
 import com.example.response.Result;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -39,6 +40,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -86,27 +88,31 @@ public class Main {
 
   @RequestMapping(value = "/account")
   public @ResponseBody
-  Result saveSfContact(@RequestParam(name = "name") String name, @RequestParam(name = "id")String id) {
+  Result saveSfContact(@RequestParam(name = "id")String id) {
     Result result = new Result();
+    List<HerokuResponse> herokuResult = new ArrayList<>();
     try (Connection connection = dataSource.getConnection()) {
       Statement stmt = connection.createStatement();
-      ResultSet rs = stmt.executeQuery("select * from salesforcecgoconnect.account where salesforcecgoconnect.account.name= '"+ name +"' and salesforcecgoconnect.account.recordtypeid = '" + id + "'");
-      //stmt.executeUpdate("select * from salesforcecgoconnect.account where salesforcecgoconnect.account.name= '"+ name +"' and recordtypeid = '" + id + "'");
+      ResultSet rs = stmt.executeQuery("select * from salesforcecgoconnect.account where and salesforcecgoconnect.account.recordtypeid = '" + id + "'");
+
       while (rs.next()){
-        result.setId(rs.getString("recordtypeid"));
-        result.setName(rs.getString("name"));
+        HerokuResponse herokuResponse = new HerokuResponse();
+        herokuResponse.setId(rs.getString("recordtypeid"));
+        herokuResponse.setName(rs.getString("name"));
+        herokuResult.add(herokuResponse);
       }
     } catch (Exception e) {
       e.printStackTrace();
     }
+    result.setResponse(herokuResult);
     return result;
   }
 
   @RequestMapping(value = "/get-account")
   public @ResponseBody
-  Result getSfContact(@RequestParam(name = "name") String name, @RequestParam(name = "id")String id) {
+  Result getSfContact(@RequestParam(name = "id")String id) {
     RestTemplate restTemplate = new RestTemplate();
-    String formattedQuoteUrl = MessageFormat.format(testUrl, name, id);
+    String formattedQuoteUrl = MessageFormat.format(testUrl, id);
     ResponseEntity<Result> result = restTemplate.getForEntity(formattedQuoteUrl, Result.class);
     return result.getBody();
   }

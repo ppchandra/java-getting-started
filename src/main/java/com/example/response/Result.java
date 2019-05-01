@@ -1,23 +1,16 @@
 package com.example.response;
 
+import java.util.List;
+
 public class Result {
 
-    private String id;
-    private String name;
+    private List<HerokuResponse> response = null;
 
-    public String getId() {
-        return id;
+    public List<HerokuResponse> getResponse() {
+        return response;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public void setResponse(List<HerokuResponse> response) {
+        this.response = response;
     }
 }
