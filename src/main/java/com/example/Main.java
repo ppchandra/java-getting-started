@@ -24,11 +24,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import static javax.measure.unit.SI.KILOGRAM;
-import javax.measure.quantity.Mass;
-import org.jscience.physics.model.RelativisticModel;
-import org.jscience.physics.amount.Amount;
+import org.springframework.web.bind.annotation.*;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -65,7 +61,7 @@ public class Main {
       stmt.executeUpdate("INSERT INTO ticks VALUES (now())");
       ResultSet rs = stmt.executeQuery("SELECT tick FROM ticks");
 
-      ArrayList<String> output = new ArrayList<String>();
+      ArrayList<String> output = new ArrayList<>();
       while (rs.next()) {
         output.add("Read from DB: " + rs.getTimestamp("tick"));
       }
@@ -78,12 +74,19 @@ public class Main {
     }
   }
 
-  @RequestMapping("/hello")
-  String hello(Map<String, Object> model) {
-    RelativisticModel.select();
-    Amount<Mass> m = Amount.valueOf("12 GeV").to(KILOGRAM);
-    model.put("science", "E=mc^2: 12 GeV = " + m.toString());
-    return "hello";
+  //Save a account to the postgres DB
+  @PostMapping(value = "/save-account")
+  public @ResponseBody
+  boolean saveSfContact(@RequestParam(name = "name") String name, @RequestParam(name = "id")String id) {
+    try (Connection connection = dataSource.getConnection()) {
+      Statement stmt = connection.createStatement();
+      stmt.executeUpdate("update salesforcecgoconnect.account set salesforcecgoconnect.account.name= '"+ name +"' where recordtypeid = '" + id + "'");
+      return true;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
+    }
+
   }
 
   @Bean
