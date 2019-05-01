@@ -75,7 +75,7 @@ public class Main {
   }
 
   //Save a account to the postgres DB
-  @PostMapping(value = "/save-account")
+  @RequestMapping(value = "/save-account")
   public @ResponseBody
   boolean saveSfContact(@RequestParam(name = "name") String name, @RequestParam(name = "id")String id) {
     try (Connection connection = dataSource.getConnection()) {
