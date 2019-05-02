@@ -133,7 +133,7 @@ public class Main {
       if (notifications != null) {
 
         for (PGNotification notification : notifications) {
-          logger.debug("Got notification: " + notification.getName() + notification.getParameter());
+          logger.info("Got notification: " + notification.getName() + notification.getParameter());
         }
       }
 
