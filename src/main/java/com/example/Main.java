@@ -20,13 +20,18 @@ import com.example.response.HerokuResponse;
 import com.example.response.Result;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.postgresql.PGConnection;
+import org.postgresql.PGNotification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,11 +46,13 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @SpringBootApplication
+@EnableScheduling
 public class Main {
+
+  private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
   @Value("${spring.datasource.url}")
   private String dbUrl;
@@ -104,6 +111,37 @@ public class Main {
     RestTemplate restTemplate = new RestTemplate();
     String formattedQuoteUrl = MessageFormat.format(testUrl2, id);
     return restTemplate.getForEntity(formattedQuoteUrl, Result.class);
+  }
+
+  @Scheduled(fixedDelay=3000)
+  public void listen()
+  {
+    try(Connection conn =  dataSource.getConnection())
+    {
+      // issue a dummy query to contact the backend
+      // and receive any pending notifications.
+      Statement stmt = conn.createStatement();
+      stmt.execute("LISTEN select_event");
+      ResultSet rs = stmt.executeQuery("SELECT * from salesforcecgoconnect.account");
+      rs.close();
+      stmt.close();
+
+      org.postgresql.PGNotification notifications[] = (conn.unwrap(PGConnection.class)).getNotifications();
+
+      logger.debug(notifications == null ? "0": String.valueOf(notifications.length));
+
+      if (notifications != null) {
+
+        for (PGNotification notification : notifications) {
+          logger.debug("Got notification: " + notification.getName() + notification.getParameter());
+        }
+      }
+
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
   }
 
   @Bean
