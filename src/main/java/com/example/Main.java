@@ -53,6 +53,9 @@ public class Main {
   @Value("${test-app.url}")
   private String testUrl;
 
+  @Value("${test-app2.url}")
+  private String testUrl2;
+
   @Autowired
   private DataSource dataSource;
 
@@ -63,27 +66,6 @@ public class Main {
   @RequestMapping("/")
   String index() {
     return "index";
-  }
-
-  @RequestMapping("/db")
-  String db(Map<String, Object> model) {
-    try (Connection connection = dataSource.getConnection()) {
-      Statement stmt = connection.createStatement();
-      stmt.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)");
-      stmt.executeUpdate("INSERT INTO ticks VALUES (now())");
-      ResultSet rs = stmt.executeQuery("SELECT tick FROM ticks");
-
-      ArrayList<String> output = new ArrayList<>();
-      while (rs.next()) {
-        output.add("Read from DB: " + rs.getTimestamp("tick"));
-      }
-
-      model.put("records", output);
-      return "db";
-    } catch (Exception e) {
-      model.put("message", e.getMessage());
-      return "error";
-    }
   }
 
   @RequestMapping(value = "/account")
@@ -108,13 +90,20 @@ public class Main {
     return result;
   }
 
-  @RequestMapping(value = "/get-account")
+  @RequestMapping(value = "/af-account")
   public @ResponseBody
-  Result getSfContact(@RequestParam(name = "id")String id) {
+  ResponseEntity<Result> getAfAccount(@RequestParam(name = "id")String id) {
     RestTemplate restTemplate = new RestTemplate();
     String formattedQuoteUrl = MessageFormat.format(testUrl, id);
-    ResponseEntity<Result> result = restTemplate.getForEntity(formattedQuoteUrl, Result.class);
-    return result.getBody();
+    return restTemplate.getForEntity(formattedQuoteUrl, Result.class);
+  }
+
+  @RequestMapping(value = "/cp-account")
+  public @ResponseBody
+  ResponseEntity<Result> getCpAccount(@RequestParam(name = "id")String id) {
+    RestTemplate restTemplate = new RestTemplate();
+    String formattedQuoteUrl = MessageFormat.format(testUrl2, id);
+    return restTemplate.getForEntity(formattedQuoteUrl, Result.class);
   }
 
   @Bean
