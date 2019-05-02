@@ -121,8 +121,8 @@ public class Main {
       // issue a dummy query to contact the backend
       // and receive any pending notifications.
       Statement stmt = conn.createStatement();
-      stmt.execute("LISTEN select_event");
-      ResultSet rs = stmt.executeQuery("SELECT * from salesforcecgoconnect.account");
+      stmt.execute("LISTEN insert_event");
+      ResultSet rs = stmt.executeQuery("SELECT 1");
       rs.close();
       stmt.close();
 
